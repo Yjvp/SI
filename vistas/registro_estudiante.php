@@ -327,6 +327,17 @@ $(document).on("click", ".btn-actualizar", function () {
 
 // Función para guardar los cambios
 $("#btnGuardarCambios").click(function () {
+
+  // Obtener el formulario
+  var formulario = document.getElementById("frmEditarEstudiante");
+  
+  // Validar el formulario
+  if (!formulario.checkValidity()) {
+    // Si no es válido, mostrar mensajes de validación
+    formulario.reportValidity();
+    return false;
+  }
+
   $.ajax({
     url: "../procesos/actualizarEstudiante.php", // Ruta al archivo PHP que actualiza los datos
     method: "POST",
@@ -343,6 +354,47 @@ $("#btnGuardarCambios").click(function () {
       }
     },
   });
+});
+
+// FUNCIÓN PARA ELIMINAR ESTUDIANTE
+$(document).on("click", ".btn-eliminar", function () {
+    var idEstudiante = $(this).data("id");
+    var boton = $(this);
+    
+    // Confirmar antes de eliminar
+    swal({
+        title: "¿Estás seguro?",
+        text: "Esta acción eliminará al estudiante permanentemente",
+        icon: "warning",
+        buttons: ["Cancelar", "Eliminar"],
+        dangerMode: true,
+    })
+    .then((willDelete) => {
+        if (willDelete) {
+            // Proceder con la eliminación
+            $.ajax({
+                url: "../procesos/eliminarEstudiante.php",
+                method: "POST",
+                data: { id: idEstudiante },
+                success: function (respuesta) {
+                    respuesta = respuesta.trim();
+                    
+                    if (respuesta == 1) {
+                        swal("Éxito", "Estudiante eliminado correctamente", "success");
+                        // Recargar la tabla DataTable
+                        $('#tablaEstudiantes').DataTable().ajax.reload();
+                    } else if (respuesta == 2) {
+                        swal("Error", "No se puede eliminar el estudiante porque tiene registros relacionados", "error");
+                    } else {
+                        swal("Error", "No se pudo eliminar el estudiante", "error");
+                    }
+                },
+                error: function () {
+                    swal("Error", "Error en la conexión al servidor", "error");
+                }
+            });
+        }
+    });
 });
     
 
